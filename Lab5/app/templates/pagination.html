@@ -1,0 +1,35 @@
+{% macro pagination(currentPage, lastPage, currentEndpoint) %}
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+
+        <li class="page-item {% if currentPage == 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{url_for(currentEndpoint, page=request.args.get('page', 1)|int - 1)}}"
+                aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% if currentPage - 2 > 1 %}
+        <li class="page-item"><a class="page-link" href="{{url_for(currentEndpoint, page=1)}}">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">...</a></li>
+        {% endif %}
+
+        {% for page in range([1, currentPage - 2]|max, [currentPage + 3, lastPage + 1]|min) %}
+        <li class="page-item {% if currentPage == page %}active{% endif %}"><a class="page-link"
+                href="{{url_for(currentEndpoint, page=page)}}">{{ page }}</a></li>
+        {% endfor %}
+
+        {% if lastPage - currentPage > 2 %}
+        <li class="page-item"><a class="page-link" href="#">...</a></li>
+        <li class="page-item"><a class="page-link" href="{{url_for(currentEndpoint, page=lastPage)}}">{{ lastPage
+                }}</a>
+        </li>
+        {% endif %}
+        <li class="page-item {% if currentPage == lastPage %}disabled{% endif %}">
+            <a class="page-link" href="{{url_for(currentEndpoint, page=request.args.get('page', 1)|int + 1)}}"
+                aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endmacro %}

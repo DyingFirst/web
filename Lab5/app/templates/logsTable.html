@@ -1,0 +1,66 @@
+{% macro logsTable(logs, current_user) %}
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>№</th>
+
+            {% if request.endpoint == "logs.visitLogs" or request.endpoint == "logs.userLogs" %}
+            <th>Пользователь</th>
+            {% endif %}
+
+            {% if request.endpoint == "logs.visitLogs" or request.endpoint == "logs.pageLogs" %}
+            <th>Страница</th>
+            {% endif %}
+
+            {% if request.endpoint == "logs.visitLogs" %}
+            <th>Дата</th>
+            {% endif %}
+
+            {% if request.endpoint == "logs.pageLogs" or request.endpoint == "logs.userLogs" %}
+            <th>Количество посещений</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <!-- № -->
+            <td>
+                {{ (request.args.get('page', 1)|int - 1) * 15 + loop.index }}
+            </td>
+
+            <!-- Пользователь -->
+            {% if request.endpoint == "logs.visitLogs" or request.endpoint == "logs.userLogs" %}
+            <td>
+                {% if log.bio == None %}Неаутентифицированный пользователь{% else %}{{ log.bio }}{% endif %}
+            </td>
+            {% endif %}
+
+            <!-- Страница -->
+            {% if request.endpoint == "logs.visitLogs" or request.endpoint == "logs.pageLogs" %}
+            <td>
+                {{ log.path }}
+            </td>
+            {% endif %}
+
+            <!-- Дата -->
+            {% if request.endpoint == "logs.visitLogs" %}
+            <td>
+                {{ '%02d' | format(log.created_at.day|int) }}.{{ '%02d' | format(log.created_at.month|int) }}.{{
+                log.created_at.year }} {{ '%02d' | format(log.created_at.hour|int) }}:{{ '%02d' |
+                format(log.created_at.minute|int) }}:{{ '%02d' | format(log.created_at.second|int) }}
+            </td>
+            {% endif %}
+
+            <!-- Количество посещений -->
+            {% if request.endpoint == "logs.pageLogs" or request.endpoint == "logs.userLogs" %}
+            <td>
+                {{ log.count }}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}

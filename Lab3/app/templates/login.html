@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center">
+    <form class="w-50 mt-3" method="post">
+        <div class="mb-3">
+            <input type="login" class="form-control" id="" placeholder="login" name="login">
+        </div>
+        <div class="mb-3">
+            <input type="password" class="form-control" id="" placeholder="password" name="password">
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="exampleCheck1" name="remember">
+            <label class="form-check-label" for="exampleCheck1">Запомнить меня</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Войти</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "logsTable.html" import logsTable %}
+{% from "pagination.html" import pagination %}
+
+{% block content %}
+<div class="mt-3 d-flex flex-column justify-content-center">
+    <h1 class="mx-auto">Логи</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="{{url_for('logs.visitLogs')}}">По посещениям</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{{url_for('logs.pageLogs')}}">По страницам</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{url_for('logs.userLogs')}}">По пользователям</a>
+        </li>
+    </ul>
+    <div class="mt-3">
+        {{logsTable(logs, current_user)}}
+    </div>
+    <div class="d-flex justify-content-between mt-3">
+        <a href="{{url_for('logs.saveToCSV', startPage=request.args.get('page', 1), endPage=request.args.get('page', 1), type='pageLogs')}}"
+            type="button" class="btn btn-success mb-3">Сохранить страницу в CSV</a>
+        {{pagination(request.args.get("page", 1) | int, lastPage, request.endpoint)}}
+        <a href="{{url_for('logs.saveToCSV', startPage=1, endPage=lastPage, type='pageLogs')}}" type="button"
+            class="btn btn-success mb-3">Сохранить всё в CSV</a>
+    </div>
+</div>
+{% endblock %}

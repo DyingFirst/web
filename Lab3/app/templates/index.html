@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="mt-3">
+    <p>Разработайте веб-приложение с использованием фреймворка Flask. Приложение должно предоставлять следующий
+        функционал.</p>
+    <ol>
+        <li>
+            Страница "Счётчик посещений"
+        </li>
+        <li>
+            Аутентификация пользователей
+        </li>
+        <li>
+            "Секретная страница"
+        </li>
+    </ol>
+    {% if current_user.is_authenticated %}
+    <div class="">User: {{current_user.login}}</div>
+    {% else %}
+    <div class="">User: Anonymous</div>
+    {% endif %}
+</div>
+
+
+
+
+{% endblock content %}
