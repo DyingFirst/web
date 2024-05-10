@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  web:
+    build: ./app
+    ports:
+      - "8081:5000"
+
