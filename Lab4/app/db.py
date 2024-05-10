@@ -1,6 +1,7 @@
 from models import User
 from config import readconfig
 from connector_db import MySQL
+import mysql.connector.errors
 
 cfg = readconfig()
 db = MySQL(cfg)
@@ -82,6 +83,87 @@ def change_password(newPassword, current_user):
         db.connection().commit()
         cursor.close()
         flash_msg = ('Пароль успешно изменен', 'success')
+        return flash_msg
+    except Exception as e:
+        cursor.close()
+        flash_msg = (str(e), 'danger')
+        return flash_msg
+
+def any_from_users_by_ID(UID):
+    cursor = db.connection().cursor(named_tuple=True)
+
+    query = "SELECT * FROM `users` WHERE `id` = %s"
+    values = (UID,)
+    cursor.execute(query, values)
+    user = cursor.fetchone()
+
+    return user
+
+def roles_name():
+    cursor = db.connection().cursor(named_tuple=True)
+
+    query = "SELECT role_name FROM `roles`"
+    cursor.execute(query)
+    roles = cursor.fetchall()
+    return roles
+
+def role_name_by_ID(user):
+    cursor = db.connection().cursor(named_tuple=True)
+
+    query = "SELECT role_name FROM `roles` WHERE `id` = %s"
+    cursor.execute(query, (user.role_id,))
+    selectedRole = cursor.fetchone()
+    return selectedRole
+
+def edit_user(first_name, last_name, patronymic, role, UID):
+    cursor = db.connection().cursor(named_tuple=True)
+
+    query = "UPDATE users \
+                SET first_name = %s, last_name = %s, patronymic = %s, role_id = (SELECT id FROM roles WHERE role_name = %s) \
+                WHERE id = %s; "
+    values = (first_name, last_name, patronymic, role, UID)
+    try:
+        cursor.execute(query, values)
+        db.connection().commit()
+        cursor.close()
+        flash_msg = ('Пользователь успешно отредактирован', 'success')
+        return flash_msg
+    except Exception as e:
+        flash_msg = (str(e), 'danger')
+        return flash_msg
+
+def get_role_names():
+    cursor = db.connection().cursor(named_tuple=True)
+    query = "SELECT role_name FROM roles"
+    cursor.execute(query)
+    roles = cursor.fetchall()
+    cursor.close()
+    return roles
+
+def create_new_user(login, password, first_name, last_name, patronymic, role):
+    cursor = db.connection().cursor(named_tuple=True)
+
+    query = "SELECT id FROM `roles` WHERE `role_name` = %s"
+    values = (role,)
+    try:
+        cursor.execute(query, values)
+        roleId = cursor.fetchone().id
+    except Exception as e:
+        flash_msg = (str(e), 'danger')
+
+
+    query = "INSERT INTO `users` (`login`, `password_hash`, `first_name`, `last_name`, `patronymic`, `role_id`) \
+            VALUES (%s, SHA2(%s, 256), %s, %s, %s, %s)"
+    values = (login, password, first_name, last_name, patronymic, roleId)
+    try:
+        cursor.execute(query, values)
+        db.connection().commit()
+        cursor.close()
+        flash_msg = ('Пользователь успешно создан', 'success')
+        return flash_msg
+    except mysql.connector.errors.IntegrityError as e:
+        cursor.close()
+        flash_msg = (f"Логин `{login}` уже занят", 'danger')
         return flash_msg
     except Exception as e:
         cursor.close()

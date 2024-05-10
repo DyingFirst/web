@@ -1,12 +1,10 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-import mysql.connector.errors
 from hashlib import sha256
-import re
 from models import User
 from config import readconfig
-from db import load_user, load_users, show_user, login, get_password, delete_user, change_password
-from pkg import validate_password
+from db import load_user, load_users, show_user, login, get_password, delete_user, change_password, any_from_users_by_ID, roles_name, role_name_by_ID, edit_user, get_role_names,create_new_user
+from pkg import validate_password, validate_new_user
 
 
 app = Flask(__name__)
@@ -71,11 +69,9 @@ def showUser(UID: int):
 @app.route('/createUser', methods=["GET", "POST"])
 @login_required
 def createUser():
-    cursor = db.connection().cursor(named_tuple=True)
-    query = "SELECT role_name FROM roles"
-    cursor.execute(query)
-    roles = cursor.fetchall()
-    cursor.close()
+
+    roles = get_role_names()
+
     if request.method == "GET":
         return render_template('createUser.html', roles=roles, selectedRole="", errors={}, user={'login': '', 'password': '', 'first_name': '', 'last_name': '', 'patronymic': '', 'role': ''})
 
@@ -87,80 +83,30 @@ def createUser():
     role = "Нет" if request.form.get(
         "role") == "Выберите роль" else request.form.get("role")
 
-    errors = {}
-    if not re.fullmatch(r"[a-zA-Z0-9]{5,}", login):
-        # flash('Логин должен состоять только из латинских букв и цифр и иметь длину не менее 5 символов', 'danger')
-        errors["login"] = "Логин должен состоять только из латинских букв и цифр и иметь длину не менее 5 символов"
-    if not login:
-        errors["login"] = "Логин не может быть пустым"
-        # flash('Логин не может быть пустым', 'danger')
-    if not re.fullmatch(r"^(?=.+[a-zа-я])(?=.+[A-ZА-Я])(?=.*\d)(?!.*\s)[a-zA-Zа-яА-Я\d~!?@#$%^&*_\-+()\[\]{}><\\/|\"\'.,:;]{8,128}$", password):
-        # flash(
-        #     'Пароль не сответствует требованиям: не менее 8 символов; не более 128 символов; как минимум одна заглавная и одна строчная буква; только латинские или кириллические буквы; как минимум одна цифра; только арабские цифры; без пробелов; Другие допустимые символы:~ ! ? @ # $ % ^ & * _ - + ( ) [ ] { } > < / \ | \" \' . , : ;', 'danger')
-        errors[
-            "password"] = "Пароль не сответствует требованиям: не менее 8 символов; не более 128 символов; как минимум одна заглавная и одна строчная буква; только латинские или кириллические буквы; как минимум одна цифра; только арабские цифры; без пробелов; Другие допустимые символы:~ ! ? @ # $ % ^ & * _ - + ( ) [ ] { } > < / \ | \" \' . , : ;"
-    if not password:
-        # flash('Пароль не может быть пустым', 'danger')
-        errors["password"] = "Пароль не может быть пустым"
-    if not last_name:
-        # flash('Фамилия не может быть пустой', 'danger')
-        errors["last_name"] = "Фамилия не может быть пустой"
-    if not first_name:
-        # flash('Имя не может быть пустым', 'danger')
-        errors["first_name"] = "Имя не может быть пустым"
+    errors = validate_new_user(login, password, first_name, last_name)
+
     if errors:
         return render_template('createUser.html', roles=roles, selectedRole=role, errors=errors, user={'login': login, 'password': password, 'first_name': first_name, 'last_name': last_name, 'patronymic': patronymic, 'role': role})
 
-    cursor = db.connection().cursor(named_tuple=True)
-
-    query = "SELECT id FROM `roles` WHERE `role_name` = %s"
-    values = (role,)
-    try:
-        cursor.execute(query, values)
-        roleId = cursor.fetchone().id
-    except Exception as e:
-        flash(e, 'danger')
-        return render_template('createUser.html', roles=roles, selectedRole=role, errors={}, user={'login': login, 'password': password, 'first_name': first_name, 'last_name': last_name, 'patronymic': patronymic, 'role': role})
-
-    query = "INSERT INTO `users` (`login`, `password_hash`, `first_name`, `last_name`, `patronymic`, `role_id`) \
-            VALUES (%s, SHA2(%s, 256), %s, %s, %s, %s)"
-    values = (login, password, first_name, last_name, patronymic, roleId)
-    try:
-        cursor.execute(query, values)
-        db.connection().commit()
-        cursor.close()
-        flash('Пользователь успешно создан', 'success')
+    flash_msg, flash_status = create_new_user(login, password, first_name, last_name, patronymic, role)
+    if flash_status == 'success':
+        flash(flash_msg, flash_status)
         return redirect(url_for('index'))
-    except mysql.connector.errors.IntegrityError as e:
-        cursor.close()
-        flash(f"Логин `{login}` уже занят", 'danger')
-        return render_template('createUser.html', roles=roles, selectedRole=role, errors={}, user={'login': login, 'password': password, 'first_name': first_name, 'last_name': last_name, 'patronymic': patronymic, 'role': role})
-    except Exception as e:
-        cursor.close()
-        flash(e, 'danger')
+    if flash_status == 'danger':
+        flash(flash_msg, flash_status)
         return render_template('createUser.html', roles=roles, selectedRole=role, errors={}, user={'login': login, 'password': password, 'first_name': first_name, 'last_name': last_name, 'patronymic': patronymic, 'role': role})
 
 
 @app.route('/editUser/<int:UID>', methods=["GET", "POST"])
 @login_required
 def editUser(UID: int):
-    cursor = db.connection().cursor(named_tuple=True)
 
-    query = "SELECT * FROM `users` WHERE `id` = %s"
-    values = (UID,)
-    cursor.execute(query, values)
-    user = cursor.fetchone()
-
-    query = "SELECT role_name FROM `roles`"
-    cursor.execute(query)
-    roles = cursor.fetchall()
-
-    query = "SELECT role_name FROM `roles` WHERE `id` = %s"
-    cursor.execute(query, (user.role_id,))
-    selectedRole = cursor.fetchone()
+    user = any_from_users_by_ID(UID)
+    roles = roles_name()
+    selected_role = role_name_by_ID(user)
 
     if request.method == "GET":
-        return render_template('editUser.html', roles=roles, selectedRole=selectedRole.role_name, errors={}, user=user)
+        return render_template('editUser.html', roles=roles, selectedRole=selected_role.role_name, errors={}, user=user)
 
     first_name = request.form.get("first_name")
     last_name = request.form.get("last_name")
@@ -178,18 +124,12 @@ def editUser(UID: int):
     if errors:
         return render_template('createUser.html', roles=roles, selectedRole=role, errors=errors, user={'first_name': first_name, 'last_name': last_name, 'patronymic': patronymic, 'role': role})
 
-    query = "UPDATE users \
-            SET first_name = %s, last_name = %s, patronymic = %s, role_id = (SELECT id FROM roles WHERE role_name = %s) \
-            WHERE id = %s; "
-    values = (first_name, last_name, patronymic, role, UID)
-    try:
-        cursor.execute(query, values)
-        db.connection().commit()
-        cursor.close()
-        flash('Пользователь успешно отредактирован', 'success')
+    flash_msg, flash_status = edit_user(first_name, last_name, patronymic, role, UID)
+    if flash_status == 'success':
+        flash(flash_msg, flash_status)
         return redirect(url_for('index'))
-    except Exception as e:
-        flash(e, 'danger')
+    if flash_status == 'danger':
+        flash(flash_msg, flash_status)
         return render_template('editUser.html', roles=roles, selectedRole=role, errors={}, user={'first_name': first_name, 'last_name': last_name, 'patronymic': patronymic, 'role': role})
 
 
