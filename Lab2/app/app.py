@@ -1,11 +1,10 @@
-from flask import Flask, render_template, make_response, request
-import re
+from flask import Flask, render_template, make_response, request, flash
 from pkg import calculator, phone_validate
 
 app = Flask(__name__)
 
 application = app
-
+app.secret_key = "85d7d5535b4f1d1576ed28da78895bbf3a233665bed5749722f2ddf4eb37bf34"
 
 @app.route('/')
 def index():
@@ -56,7 +55,8 @@ def phoneNumber():
         phone_number, error = phone_validate(phone)
 
         if error:
-            return render_template("phoneNumber.html", title="Проверка номера телефона", phone=error)
+            flash(error, 'danger')
+            return render_template("phoneNumber.html", title="Проверка номера телефона", phone=phone)
 
 
         return render_template("phoneNumber.html", title="Проверка номера телефона", phone="8-{1}{2}{3}-{4}{5}{6}-{7}{8}-{9}{10}".format(*phone_number))
