@@ -55,8 +55,7 @@ def phoneNumber():
         phone_number, error = phone_validate(phone)
 
         if error:
-            flash(error, 'danger')
-            return render_template("phoneNumber.html", title="Проверка номера телефона", phone=phone)
+            return render_template("phoneNumber.html", title="Проверка номера телефона", phone=phone, error=error)
 
 
         return render_template("phoneNumber.html", title="Проверка номера телефона", phone="8-{1}{2}{3}-{4}{5}{6}-{7}{8}-{9}{10}".format(*phone_number))

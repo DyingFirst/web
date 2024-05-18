@@ -1,25 +1,17 @@
 {% extends "base.html" %}
 {%block content%}
-<div class="container mt-3">
-    <form class="phone-number-form row g-3 needs-validation was-valited d-flex justify-content-center"
-        action="{{url_for('phoneNumber')}}" method="post" novalidate>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class=flashes>
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-        <div class="col-md-4 position-relative">
-            <label for="phone-number-input" class="form-label">Номер телефона</label>
-            <input type="text" class="form-control" id="phone-number-input" placeholder="8-800-555-35-35" name="phone"
-                value="{{phone}}" required>
-            <div class="d-flex justify-content-center">
-                <button type="submit" class="btn btn-primary mt-2 w-75">Проверить</button>
+    <div class="container mt-3">
+        <form class="phone-number-form row g-3 needs-validation was-valited d-flex justify-content-center"
+              action="{{url_for('phoneNumber')}}" method="post" novalidate>
+            <div class="col-md-4 position-relative">
+                <div style="color: red">{% if error %}{{error}}{% endif %}</div>
+                <label for="phone-number-input" class="form-label">Номер телефона</label>
+                <input type="text" class="{% if error %}is-invalid{% else %}is-valid{% endif %} form-control"
+                       id="phone-number-input" placeholder="8-800-555-35-35" name="phone" value="{{phone}}" required>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary mt-2 w-75">Проверить</button>
+                </div>
             </div>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 {%endblock%}
