@@ -3,7 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from hashlib import sha256
 from models import User
 from config import readconfig
-from db import load_user, load_users, show_user, login, get_password, delete_user, change_password, any_from_users_by_ID, roles_name, role_name_by_ID, edit_user, get_role_names,create_new_user
+from db import load_user_db, load_users, show_user, get_user_from_db, get_password, delete_user, change_password, any_from_users_by_ID, roles_name, role_name_by_ID, edit_user, get_role_names,create_new_user
 from pkg import validate_password, validate_new_user
 
 
@@ -22,7 +22,7 @@ login_manager.login_message_category = "warning"
 
 @login_manager.user_loader
 def load_user(UID):
-    loader = load_user(UID)
+    loader = load_user_db(UID)
     return loader
 
 @app.route('/')
@@ -40,7 +40,7 @@ def login():
     user_password = request.form['password']
     remember = request.form.get('remember') == 'on'
 
-    user = login(user_login, user_password)
+    user = get_user_from_db(user_login, user_password)
     if not user:
         flash('Логин или пароль введены неверно', 'danger')
         return render_template("login.html")
@@ -59,7 +59,7 @@ def logout():
 
 @app.route('/showUser/<int:UID>', methods=["GET", "POST"])
 def showUser(UID: int):
-    user = show_user()
+    user = show_user(UID)
     if user is None:
         flash('Пользователь не найден', 'danger')
         return redirect(url_for('index'))

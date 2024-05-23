@@ -7,7 +7,7 @@ cfg = readconfig()
 db = MySQL(cfg)
 
 
-def load_user(UID):
+def load_user_db(UID):
     cursor = db.connection().cursor(named_tuple=True)
     query = 'SELECT id, login FROM users WHERE id = %s'
     cursor.execute(query, (UID,))
@@ -28,6 +28,7 @@ def load_users():
     cursor.close()
     return users
 
+
 def show_user(UID):
     cursor = db.connection().cursor(named_tuple=True)
     query = "SELECT users.id, users.login, users.first_name, users.last_name, users.patronymic, roles.role_name FROM `users` \
@@ -38,14 +39,15 @@ def show_user(UID):
     cursor.close()
     return user
 
-def login(login, password):
+
+def get_user_from_db(login, password):
     cursor = db.connection().cursor(named_tuple=True)
-    query = "SELECT * FROM `users` \
-                WHERE `login` = %s AND `password_hash` = SHA2(%s, 256)"
+    query = "SELECT * FROM `users` WHERE `login` = %s AND `password_hash` = SHA2(%s, 256)"
     cursor.execute(query, (login, password))
     user = cursor.fetchone()
     cursor.close()
     return user
+
 
 def get_password(current_user):
     cursor = db.connection().cursor(named_tuple=True)
@@ -58,6 +60,7 @@ def get_password(current_user):
     except Exception as e:
         flash_msg = (str(e), 'danger')
         return None, flash_msg
+
 
 def delete_user(UID):
     cursor = db.connection().cursor()
@@ -74,6 +77,7 @@ def delete_user(UID):
     finally:
         cursor.close()
 
+
 def change_password(newPassword, current_user):
     query = "UPDATE `users` SET `password_hash` = SHA2(%s, 256) WHERE `id` = %s"
     values = (newPassword, current_user.id)
@@ -89,6 +93,7 @@ def change_password(newPassword, current_user):
         flash_msg = (str(e), 'danger')
         return flash_msg
 
+
 def any_from_users_by_ID(UID):
     cursor = db.connection().cursor(named_tuple=True)
 
@@ -99,6 +104,7 @@ def any_from_users_by_ID(UID):
 
     return user
 
+
 def roles_name():
     cursor = db.connection().cursor(named_tuple=True)
 
@@ -107,6 +113,7 @@ def roles_name():
     roles = cursor.fetchall()
     return roles
 
+
 def role_name_by_ID(user):
     cursor = db.connection().cursor(named_tuple=True)
 
@@ -114,6 +121,7 @@ def role_name_by_ID(user):
     cursor.execute(query, (user.role_id,))
     selectedRole = cursor.fetchone()
     return selectedRole
+
 
 def edit_user(first_name, last_name, patronymic, role, UID):
     cursor = db.connection().cursor(named_tuple=True)
@@ -132,6 +140,7 @@ def edit_user(first_name, last_name, patronymic, role, UID):
         flash_msg = (str(e), 'danger')
         return flash_msg
 
+
 def get_role_names():
     cursor = db.connection().cursor(named_tuple=True)
     query = "SELECT role_name FROM roles"
@@ -139,6 +148,7 @@ def get_role_names():
     roles = cursor.fetchall()
     cursor.close()
     return roles
+
 
 def create_new_user(login, password, first_name, last_name, patronymic, role):
     cursor = db.connection().cursor(named_tuple=True)
@@ -150,7 +160,6 @@ def create_new_user(login, password, first_name, last_name, patronymic, role):
         roleId = cursor.fetchone().id
     except Exception as e:
         flash_msg = (str(e), 'danger')
-
 
     query = "INSERT INTO `users` (`login`, `password_hash`, `first_name`, `last_name`, `patronymic`, `role_id`) \
             VALUES (%s, SHA2(%s, 256), %s, %s, %s, %s)"
