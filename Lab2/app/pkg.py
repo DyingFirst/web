@@ -13,12 +13,13 @@ def calculator(a, b, operator):
     return result
 
 def phone_validate(phone):
+    validate_rule = r'[0-9 \(\)\-\.\+]+'
     phone_numbers = re.findall("\d{1}", phone)
     if not phone_numbers:
         phone_numbers.append("")
 
     error = ""
-    if not all([symbol in [" ", "(", ")", "-", ".", "+", *list(map(str, list(range(10))))] for symbol in phone]):
+    if re.fullmatch(validate_rule, phone) is None:
         error = "Недопустимый ввод. В номере телефона встречаются недопустимые символы."
     elif phone_numbers[0] in ["7", "8"] and len(phone_numbers) != 11:
         error = "Недопустимый ввод. Неверное количество цифр."

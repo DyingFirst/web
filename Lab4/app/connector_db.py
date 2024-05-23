@@ -8,10 +8,12 @@ class MySQL:
 
     def config(self):
         return {
-            "user": self.cfg.config['database']['user'],
-            "password": self.cfg.config['database']['password'],
-            "database": self.cfg.config['database']['database'],
-            "host": self.cfg.config['database']['host']
+            "user": self.cfg['database']['user'],
+            "password": self.cfg['database']['password'],
+            "database": self.cfg['database']['database'],
+            "host": self.cfg['database']['host'],
+            "port": self.cfg['database']['port'],
+            "auth_plugin": 'mysql_native_password'
         }
 
     def connection(self):

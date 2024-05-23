@@ -1,0 +1,122 @@
+{% macro reviewMacro(course_id, current_user, reviews, self_review) %}
+<section class="about mb-5">
+    <h2 class="mb-3 text-center text-uppercase font-weight-bold">Отзывы</h2>
+
+    {% if request.endpoint == "courses.reviews" %}
+    <form method="POST">
+        <div class="d-flex flex-row">
+            <select class="form-select w-25 mb-3" name="sort_order">
+                <option value="newness">По новизне</option>
+                <option value="positive">сначала положительные</option>
+                <option value="negative">сначала отрицательные</option>
+            </select>
+            <div class="text-center ms-3">
+                <button class="btn btn-dark" type="submit">Применить</button>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+
+    <div class="d-flex flex-column">
+        {% if self_review %}
+        <h4 class="mb-2">Ваш отзыв</h4>
+
+        <div class="review mb-5">
+            <div class="d-flex flex-row">
+                <img class="img-fluid rounded-circle cursor-pointer"
+                    src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}"
+                    alt="profile-pic" style="width: 50px;">
+                <div class="ms-3 fw-bold">{{ self_review.User.full_name }}</div>
+            </div>
+            <div class="d-flex flex-row">
+                <div class="">
+                    {% for i in range(self_review.Review.rating) %}
+                    <i class="fa-solid fa-star" style="color: #212529;"></i>
+                    {%endfor%}
+                    {% for i in range(5 - self_review.Review.rating) %}
+                    <i class="fa-regular fa-star" style="color: #212529;"></i>
+                    {%endfor%}
+                </div>
+                <div class="mx-3">
+                    {{ self_review.Review.created_at.day }}
+                    {{ self_review.Review.created_at.strftime("%B") }}
+                    {{ self_review.Review.created_at.year }}
+                    {{ self_review.Review.created_at.strftime("%H:%M") }}
+                </div>
+                <div class="">
+                    <a
+                        href="{{url_for('courses.delete_review', course_id=course_id, review_id=self_review.Review.id)}}"><i
+                            class="fa-solid fa-trash" style="color: #212529;"></i></a>
+                </div>
+            </div>
+            <div class="text-break">
+                {{ self_review.Review.text }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% for review in reviews %}
+        <div class="review mb-4">
+            <div class="d-flex flex-row">
+                <img class="img-fluid rounded-circle cursor-pointer"
+                    src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}"
+                    alt="profile-pic" style="width: 50px;">
+                <div class="ms-3 fw-bold">{{ review.User.full_name }}</div>
+            </div>
+            <div class="d-flex flex-row">
+                <div class="me-3">
+                    {% for i in range(review.Review.rating) %}
+                    <i class="fa-solid fa-star" style="color: #212529;"></i>
+                    {%endfor%}
+                    {% for i in range(5 - review.Review.rating) %}
+                    <i class="fa-regular fa-star" style="color: #212529;"></i>
+                    {%endfor%}
+                </div>
+                <div class="">
+                    {{ review.Review.created_at.day }}
+                    {{ review.Review.created_at.strftime("%B") }}
+                    {{ review.Review.created_at.year }}
+                    {{ review.Review.created_at.strftime("%H:%M") }}
+                </div>
+            </div>
+            <div class="text-break">
+                {{ review.Review.text }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if request.endpoint != "courses.reviews" %}
+    <div class="text-center mb-3">
+        <a class="btn btn-dark" href="{{url_for('courses.reviews', course_id=course_id)}}">Все
+            отзывы</a>
+    </div>
+    {% endif %}
+
+    {% if current_user.is_authenticated and not self_review %}
+    <form action="{{url_for('courses.send_review', course_id=course_id)}}" class="d-flex flex-column w-50 mx-auto"
+        method="POST">
+        <select class="form-select form-select mb-3" name="rating">
+            <option value="5" selected>Отлично</option>
+            <option value="4">Хорошо</option>
+            <option value="3">Удовлетворительно</option>
+            <option value="2">Неудовлетворительно</option>
+            <option value="1">Плохо</option>
+            <option value="0">Ужасно</option>
+        </select>
+        <div class="mb-3">
+            <label for="review-text" class="form-label">Текст отзыва</label>
+            <textarea type="text" class="form-control" id="review-text" name="text"></textarea>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-dark">
+                Оставить отзыв
+            </button>
+        </div>
+    </form>
+    {% elif not current_user.is_authenticated %}
+    <h4>Авторизуйтесь для оставления отзыва</h4>
+    {% endif %}
+
+</section>
+{% endmacro %}

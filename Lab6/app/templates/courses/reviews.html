@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% from 'courses/reviewMacro.html' import reviewMacro %}
+{% from 'pagination.html' import render_pagination %}
+
+{% block content %}
+<div class="container mt-5">
+    {{reviewMacro(course_id=course_id, current_user=current_user, reviews=reviews, self_review=self_review)}}
+    <div class="mb-5">
+        {{ render_pagination(pagination, request.endpoint, {"course_id": course_id, "sort_order": sort_order}) }}
+    </div>
+</div>
+
+{% endblock %}

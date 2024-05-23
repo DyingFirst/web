@@ -5,4 +5,19 @@ services:
     build: ./app
     ports:
       - "8083:5000"
+    networks:
+      - mynetwork
+    depends_on:
+      - db
 
+  db:
+    build: ./app/db/
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: lab4
+    networks:
+      - mynetwork
+networks:
+  mynetwork:
