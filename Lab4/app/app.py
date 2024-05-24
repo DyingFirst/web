@@ -163,7 +163,11 @@ def changePassword():
     if flash_status == 'danger':
         return render_template('changePassword.html', errors={})
 
-    flash_msg, flash_status, errors = validate_password(oldPasswordSHA2, newPassword, newPasswordSHA2, repeatPassword, password_hash)
+    flash_msg, errors = validate_password(oldPasswordSHA2, newPassword, newPasswordSHA2, repeatPassword, password_hash)
+
+    if flash_msg:
+        flash(flash_msg, 'danger')
+        return render_template('changePassword.html', errors=errors)
 
     if errors:
         return render_template('changePassword.html', errors=errors)
