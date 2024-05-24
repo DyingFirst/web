@@ -1,0 +1,7 @@
+secret_key: "85d7d5535b4f1d1576ed28da78895bbf3a233665bed5749722f2ddf4eb37bf34"
+database:
+  user: "root"
+  password: "root"
+  database: "lab5"
+  host: "localhost"
+  port: "3307"

@@ -1,6 +1,6 @@
 from flask import render_template, request, Blueprint, send_file  # noqa
 from flask_login import login_required, current_user  # noqa
-from app import db  # noqa
+from config import db  # noqa
 import math  # noqa
 import csv  # noqa
 from io import BytesIO  # noqa

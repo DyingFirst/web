@@ -3,18 +3,16 @@ import re
 from hashlib import sha256
 import mysql.connector.errors
 from flask import Flask, render_template, request, redirect, url_for, flash
-from db import MySQL
+from connector_db import MySQL
+from config import cfg, db
+from auth import bp_auth, init_login_manager, check_rights
+from logs import bp_logs
+
 
 app = Flask(__name__)
-db = MySQL(app)
-app.config.from_pyfile("config.py")
+app.secret_key = cfg["secret_key"]
 
-from auth import (  # autoformatter:ignore # noqa
-    bp_auth,
-    init_login_manager,
-    check_rights,
-)
-from logs import bp_logs  # autoformatter:ignore # noqa
+
 
 app.register_blueprint(bp_auth)
 app.register_blueprint(bp_logs)

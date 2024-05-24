@@ -1,14 +1,8 @@
-from flask import (
-    render_template,
-    url_for,
-    request,
-    redirect,
-    flash,
-    Blueprint,
-)
+from flask import render_template, url_for, request, redirect, flash, Blueprint
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
 from functools import wraps
-from app import db
+from config import db
+
 
 bp_auth = Blueprint("auth", __name__, url_prefix="/auth")
 
