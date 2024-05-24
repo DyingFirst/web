@@ -3,10 +3,10 @@ import re
 from hashlib import sha256
 import mysql.connector.errors
 from flask import Flask, render_template, request, redirect, url_for, flash
-from connector_db import MySQL
 from config import cfg, db
 from auth import bp_auth, init_login_manager, check_rights
 from logs import bp_logs
+from pkg import validate_password
 
 
 app = Flask(__name__)
@@ -346,29 +346,11 @@ def changePassword():
         flash(e, "danger")
         return render_template("changePassword.html", errors={})
 
-    errors = {}
-    if oldPasswordSHA2 != password_hash.password_hash:
-        flash("Старый пароль введен неверно", "danger")
-        errors["oldPassword"] = "Старый пароль введен неверно"
-    if newPassword != repeatPassword:
-        flash("Пароли не совпадают", "danger")
-        errors["repeatPassword"] = "Пароли не совпадают"
-    if newPasswordSHA2 == password_hash.password_hash:
-        flash("Старый и новый пароли совпадают", "danger")
-        errors["newPassword"] = "Старый и новый пароли совпадают"
-    if not re.fullmatch(
-        r"^(?=.+[a-zа-я])(?=.+[A-ZА-Я])(?=.*\d)(?!.*\s)[a-zA-Zа-яА-Я\d~!?@#$%^&*_\-+()\[\]{}><\\/|\"\'.,:;]{8,128}$",
-        newPassword,
-    ):
-        flash(
-            "Новый пароль не сответствует требованиям: не менее 8 символов; не более 128 символов; как минимум одна заглавная и одна строчная буква; только латинские или кириллические буквы; как минимум одна цифра; только арабские цифры; без пробелов; Другие допустимые символы:~ ! ? @ # $ % ^ & * _ - + ( ) [ ] { } > < / \ | \" ' . , : ;",
-            "danger",
-        )
-        errors["newPassword"] = (
-            "Новый пароль не сответствует требованиям: не менее 8 символов; не более 128 символов; как минимум одна заглавная и одна строчная буква; только латинские или кириллические буквы; как минимум одна цифра; только арабские цифры; без пробелов; Другие допустимые символы:~ ! ? @ # $ % ^ & * _ - + ( ) [ ] { } > < / \ | \" ' . , : ;"
-        )
 
-    if errors:
+    flash_msg, errors = validate_password(oldPasswordSHA2, newPassword, newPasswordSHA2, repeatPassword, password_hash)
+
+    if flash_msg != None:
+        flash(flash_msg, 'danger')
         return render_template("changePassword.html", errors=errors)
 
     query = "UPDATE `users` SET `password_hash` = SHA2(%s, 256) WHERE `id` = %s"

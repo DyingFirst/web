@@ -3,5 +3,5 @@ database:
   user: "root"
   password: "root"
   database: "lab5"
-  host: "localhost"
+  host: "95.140.153.191"
   port: "3307"
