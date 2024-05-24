@@ -12,6 +12,7 @@ class MySQL:
             "password": self.app.config["MYSQL_PASSWORD"],
             "database": self.app.config["MYSQL_DATABASE"],
             "host": self.app.config["MYSQL_HOST"],
+            "port": self.app.config["MYSQL_PORT"],
         }
 
     def connection(self):
