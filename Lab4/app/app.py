@@ -166,7 +166,6 @@ def changePassword():
     flash_msg, flash_status, errors = validate_password(oldPasswordSHA2, newPassword, newPasswordSHA2, repeatPassword, password_hash)
 
     if errors:
-        flash(flash_msg, flash_status)
         return render_template('changePassword.html', errors=errors)
 
 
@@ -177,5 +176,4 @@ def changePassword():
         return redirect(url_for('index'))
 
     if flash_status == 'danger':
-        flash(flash_msg, flash_status)
         return render_template('changePassword.html', errors={})

@@ -86,12 +86,12 @@ def change_password(newPassword, current_user):
         cursor.execute(query, values)
         db.connection().commit()
         cursor.close()
-        flash_msg = ('Пароль успешно изменен', 'success')
+        flash_msg, flash_status = ('Пароль успешно изменен', 'success')
         return flash_msg
     except Exception as e:
         cursor.close()
-        flash_msg = (str(e), 'danger')
-        return flash_msg
+        flash_msg, flash_status = (str(e), 'danger')
+        return flash_msg, flash_status
 
 
 def any_from_users_by_ID(UID):
