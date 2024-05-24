@@ -56,9 +56,9 @@ def get_password(current_user):
         values = (current_user.id,)
         cursor.execute(query, values)
         password_hash = cursor.fetchone()
-        return password_hash, None
+        return password_hash, None, None
     except Exception as e:
-        flash_msg = (str(e), 'danger')
+        flash_msg, flash_status = (str(e), 'danger')
         return None, flash_msg
 
 
