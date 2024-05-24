@@ -59,7 +59,7 @@ def get_password(current_user):
         return password_hash, None, None
     except Exception as e:
         flash_msg, flash_status = (str(e), 'danger')
-        return None, flash_msg
+        return None, flash_msg, flash_status
 
 
 def delete_user(UID):
@@ -69,11 +69,11 @@ def delete_user(UID):
         values = (UID,)
         cursor.execute(query, values)
         db.connection().commit()
-        flash_msg = ('Пользователь успешно удален', 'success')
-        return flash_msg
+        flash_msg, flash_status = 'Пользователь успешно удален', 'success'
+        return flash_msg, flash_status
     except Exception as e:
-        flash_msg = (str(e), 'danger')
-        return flash_msg
+        flash_msg, flash_status = str(e), 'danger'
+        return flash_msg, flash_status
     finally:
         cursor.close()
 
@@ -86,11 +86,11 @@ def change_password(newPassword, current_user):
         cursor.execute(query, values)
         db.connection().commit()
         cursor.close()
-        flash_msg, flash_status = ('Пароль успешно изменен', 'success')
-        return flash_msg
+        flash_msg, flash_status = 'Пароль успешно изменен', 'success'
+        return flash_msg, flash_status
     except Exception as e:
         cursor.close()
-        flash_msg, flash_status = (str(e), 'danger')
+        flash_msg, flash_status = str(e), 'danger'
         return flash_msg, flash_status
 
 
@@ -134,11 +134,11 @@ def edit_user(first_name, last_name, patronymic, role, UID):
         cursor.execute(query, values)
         db.connection().commit()
         cursor.close()
-        flash_msg = ('Пользователь успешно отредактирован', 'success')
-        return flash_msg
+        flash_msg, flash_status = 'Пользователь успешно отредактирован', 'success'
+        return flash_msg, flash_status
     except Exception as e:
-        flash_msg = (str(e), 'danger')
-        return flash_msg
+        flash_msg, flash_status = str(e), 'danger'
+        return flash_msg, flash_status
 
 
 def get_role_names():
@@ -159,8 +159,8 @@ def create_new_user(login, password, first_name, last_name, patronymic, role):
         cursor.execute(query, values)
         roleId = cursor.fetchone().id
     except Exception as e:
-        flash_msg = (str(e), 'danger')
-
+        flash_msg, flash_status = str(e), 'danger'
+        return flash_msg, flash_status
     query = "INSERT INTO `users` (`login`, `password_hash`, `first_name`, `last_name`, `patronymic`, `role_id`) \
             VALUES (%s, SHA2(%s, 256), %s, %s, %s, %s)"
     values = (login, password, first_name, last_name, patronymic, roleId)
@@ -168,13 +168,13 @@ def create_new_user(login, password, first_name, last_name, patronymic, role):
         cursor.execute(query, values)
         db.connection().commit()
         cursor.close()
-        flash_msg = ('Пользователь успешно создан', 'success')
-        return flash_msg
+        flash_msg, flash_status = 'Пользователь успешно создан', 'success'
+        return flash_msg, flash_status
     except mysql.connector.errors.IntegrityError as e:
         cursor.close()
-        flash_msg = (f"Логин `{login}` уже занят", 'danger')
-        return flash_msg
+        flash_msg, flash_status = f"Логин `{login}` уже занят", 'danger'
+        return flash_msg, flash_status
     except Exception as e:
         cursor.close()
-        flash_msg = (str(e), 'danger')
-        return flash_msg
+        flash_msg, flash_status = str(e), 'danger'
+        return flash_msg, flash_status
