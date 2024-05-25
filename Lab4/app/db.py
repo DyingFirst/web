@@ -65,6 +65,9 @@ def get_password(current_user):
 def delete_user(UID):
     cursor = db.connection().cursor()
     try:
+        query = "DELETE FROM `visit_logs` WHERE `user_id` = %s;"
+        values = (UID,)
+        cursor.execute(query, values)
         query = "DELETE FROM `users` WHERE `id` = %s;"
         values = (UID,)
         cursor.execute(query, values)
